@@ -1,0 +1,108 @@
+{
+  "grid":
+  {
+    "size": 3,
+    "elements" : 32
+  },
+  "levelSets":
+  [
+    {
+      "type" : "torus",
+      "center" : [1.55,0,1.55],
+      "normal" : [0,1,0],
+      "ringRadius" : 0.2,
+      "torusRadius" : 0.7
+    },
+    {
+      "type" : "torus",
+      "center" : [-1.55,0,1.55],
+      "normal" : [0,1,0],
+      "ringRadius" : 0.2,
+      "torusRadius" : 0.7
+    },
+    {
+      "type" : "torus",
+      "center" : [1.55,0,-1.55],
+      "normal" : [0,1,0],
+      "ringRadius" : 0.2,
+      "torusRadius" : 0.7
+    },
+    {
+      "type" : "torus",
+      "center" : [-1.55,0,-1.55],
+      "normal" : [0,1,0],
+      "ringRadius" : 0.2,
+      "torusRadius" : 0.7
+    },
+    {
+      "type" : "torus",
+      "center" : [1.55,1.55,0],
+      "normal" : [0,0,1],
+      "ringRadius" : 0.2,
+      "torusRadius" : 0.7
+    },
+    {
+      "type" : "torus",
+      "center" : [-1.55,1.55,0],
+      "normal" : [0,0,1],
+      "ringRadius" : 0.2,
+      "torusRadius" : 0.7
+    },
+    {
+      "type" : "torus",
+      "center" : [1.55,-1.55,0],
+      "normal" : [0,0,1],
+      "ringRadius" : 0.2,
+      "torusRadius" : 0.7
+    },
+    {
+      "type" : "torus",
+      "center" : [-1.55,-1.55,0],
+      "normal" : [0,0,1],
+      "ringRadius" : 0.2,
+      "torusRadius" : 0.7
+    },
+    {
+      "type" : "torus",
+      "center" : [0,1.55,1.55],
+      "normal" : [1,0,0],
+      "ringRadius" : 0.2,
+      "torusRadius" : 0.7
+    },
+    {
+      "type" : "torus",
+      "center" : [0,-1.55,1.55],
+      "normal" : [1,0,0],
+      "ringRadius" : 0.2,
+      "torusRadius" : 0.7
+    },
+    {
+      "type" : "torus",
+      "center" : [0,1.55,-1.55],
+      "normal" : [1,0,0],
+      "ringRadius" : 0.2,
+      "torusRadius" : 0.7
+    },
+    {
+      "type" : "torus",
+      "center" : [0,-1.55,-1.55],
+      "normal" : [1,0,0],
+      "ringRadius" : 0.2,
+      "torusRadius" : 0.7
+    },
+    {
+      "type" : "tangleCube",
+      "center" : [0,0,0],
+      "squareCoefficient" : 5,
+      "constCoefficient" : 11.8
+    }
+  ],
+  "combinedLevelSet":
+  {
+    "indices": [0,1,2,3,4,5,6,7,8,9,10,11,12],
+    "reduction" : "min",
+    "init" : 99999,
+    "rotation" : [0,0,0],
+    "translation" : [0,0,0]
+  }
+}
