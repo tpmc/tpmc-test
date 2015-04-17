@@ -55,8 +55,8 @@ int main(int argc, char** argv)
 
   // construct Grid
   const double gridSize = tree.get<double>("grid.size");
-  std::array<std::size_t, dim> elements;
-  elements.fill(tree.get<int>("grid.elements"));
+  typedef tpmc_test::Grid<dim>::dimension_type dimension_type;
+  dimension_type elements = dimension_type::Constant(tree.get<unsigned int>("grid.elements"));
   typedef tpmc_test::Grid<dim>::domain_type domain_type;
   tpmc_test::Grid<dim> grid(elements, domain_type::Constant(-gridSize),
                             domain_type::Constant(gridSize));

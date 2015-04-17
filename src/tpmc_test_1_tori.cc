@@ -7,6 +7,7 @@
 #include "grid.hh"
 #include "geometry.hh"
 #include "levelsets.hh"
+#include "timer.hh"
 
 namespace tpmc
 {
@@ -21,6 +22,7 @@ int main()
 {
   // seed random generator
   srand(time(0));
+  tpmc_test::Timer timer;
 
   // define general grid properties
   const int dim = 3;
@@ -34,13 +36,13 @@ int main()
   typedef tpmc::FieldTraits<domain_type>::field_type field_type;
   // first torus
   domain_type firstCenter, firstNormal;
-  firstCenter << 0.375, 0.5, 0.5;
-  firstNormal << 0, 1, 0;
+  firstCenter << 0.5, 0.5, 0.375;
+  firstNormal << 1, 0, 0;
   auto firstTorus = tpmc_test::torusLevelSet(0.25, 0.075, firstCenter, firstNormal);
   // second torus
   domain_type secondCenter, secondNormal;
-  secondCenter << 0.625, 0.5, 0.5;
-  secondNormal << 0, 0, 1;
+  secondCenter << 0.5, 0.5, 0.625;
+  secondNormal << 0, 1, 0;
   auto secondTorus = tpmc_test::torusLevelSet(0.25, 0.075, secondCenter, secondNormal);
   // combined level sets
   auto tori = [firstTorus, secondTorus](const domain_type& x) {
@@ -55,11 +57,13 @@ int main()
   // storage for relative errors
   std::map<unsigned int, std::vector<field_type> > relativeErrors;
 
+  std::cout << "initialization: " << timer.lap().count() << "s\n";
+
   // loop over all numberOfElements
   for (auto numberOfElements : numbersOfElements) {
     // construct grid
-    std::array<std::size_t, dim> elements;
-    elements.fill(numberOfElements);
+    typedef typename tpmc_test::Grid<dim>::dimension_type dimension_type;
+    dimension_type elements = dimension_type::Constant(numberOfElements);
     tpmc_test::Grid<dim> grid(elements, low, high);
 
     // loop over all shifts
@@ -101,7 +105,10 @@ int main()
       relativeErrors[numberOfElements].push_back(std::abs(area - referenceSurface)
                                                  / referenceSurface);
     }
+
+    std::cout << "tests for " << numberOfElements << " elements: " << timer.lap().count() << "s\n";
   }
+  std::cout << "\n";
   // output statistics
   std::cout << "N min max mean std\n";
   for (auto x : relativeErrors) {
@@ -119,4 +126,7 @@ int main()
     st = std::sqrt(st / (x.second.size() - 1));
     std::cout << x.first << " " << min << " " << max << " " << mean << " " << st << "\n";
   }
+  std::cout << "\n";
+  std::cout << "statistics: " << timer.lap().count() << "s\n";
+  std::cout << "total: " << timer.total().count() << "s\n";
 }

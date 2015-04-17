@@ -13,6 +13,7 @@ namespace tpmc_test
   public:
     typedef double field_type;
     typedef Eigen::Matrix<field_type, dim, 1> domain_type;
+    typedef Eigen::Matrix<unsigned int, dim, 1> dimension_type;
 
     class CornerIterator : public boost::iterator_facade<CornerIterator, domain_type,
                                                          boost::random_access_traversal_tag,
@@ -59,9 +60,10 @@ namespace tpmc_test
       std::size_t currentIndex_;
     };
 
-    Hexahedron(const domain_type& lowerLeft, const domain_type& size)
+    Hexahedron(const domain_type& lowerLeft, const domain_type& size, const dimension_type& index)
         : lowerLeft_(lowerLeft)
         , size_(size)
+        , index_(index)
     {
     }
 
@@ -89,9 +91,12 @@ namespace tpmc_test
 
     const domain_type& lowerLeft() const { return lowerLeft_; }
 
+    const dimension_type& index() const { return index_; }
+
   private:
     domain_type lowerLeft_;
     domain_type size_;
+    dimension_type index_;
   };
 }
 
