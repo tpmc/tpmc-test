@@ -9,3 +9,6 @@ target_link_libraries(tpmc_test_1_tori ${TPMC_LIBRARIES})
 
 add_executable(tpmc_test_2_rotation tpmc_test_2_rotation.cc)
 target_link_libraries(tpmc_test_2_rotation ${TPMC_LIBRARIES})
+
+add_executable(tpmc_test_3_performance tpmc_test_3_performance.cc)
+target_link_libraries(tpmc_test_3_performance ${TPMC_LIBRARIES})
