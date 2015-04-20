@@ -63,6 +63,7 @@ int main()
   const int dim = 3;
   const std::vector<unsigned int> numbersOfElements{ { 16, 32, 64, 128, 256 } };
   const unsigned int numberOfRandomRuns = 30;
+  const unsigned int numberOfRunsPerDataset = 30;
   typedef tpmc_test::Grid<dim>::domain_type domain_type;
   typedef typename tpmc::FieldTraits<domain_type>::field_type field_type;
   domain_type low = domain_type::Zero();
@@ -89,12 +90,19 @@ int main()
       // generate random data
       std::generate(data.begin(), data.end(), [&]() { return distribution(generator); });
       // calculate time for fulltpmc and simpletpmc
-      field_type timeFullTPMC = keyTimeFullTPMC(data);
-      field_type timeSimpleTPMC = keyTimeSimpleTPMC(data);
+      field_type timeFullTPMC = 0.0;
+      field_type timeSimpleTPMC = 0.0;
+      for (unsigned int j = 0; j < numberOfRunsPerDataset; ++j) {
+        timeFullTPMC += keyTimeFullTPMC(data);
+        timeSimpleTPMC += keyTimeSimpleTPMC(data);
+      }
+      timeFullTPMC /= numberOfRunsPerDataset;
+      timeSimpleTPMC /= numberOfRunsPerDataset;
       // add time ratio to output
       timeRatios[numberOfElements].push_back(timeFullTPMC / timeSimpleTPMC);
     }
-    std::cout << "time for " << numberOfRandomRuns << " runs with " << numberOfElements
+    std::cout << "time for " << numberOfRunsPerDataset << " runs of " << numberOfRandomRuns
+              << " random datasets with " << numberOfElements
               << " elements: " << timer.total().count() << "s\n";
   }
   // output statistics
