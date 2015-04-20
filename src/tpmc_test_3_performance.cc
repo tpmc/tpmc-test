@@ -1,6 +1,7 @@
 #include <iostream>
 #include <iomanip>
 #include <numeric>
+#include <random>
 #include <boost/range/algorithm/transform.hpp>
 #include <boost/pending/disjoint_sets.hpp>
 #include <Eigen/Dense>
@@ -58,9 +59,6 @@ private:
 
 int main()
 {
-  // seed random generator
-  srand(time(0));
-
   // define general grid properties
   const int dim = 3;
   const std::vector<unsigned int> numbersOfElements{ { 16, 32, 64, 128, 256 } };
@@ -69,6 +67,10 @@ int main()
   typedef typename tpmc::FieldTraits<domain_type>::field_type field_type;
   domain_type low = domain_type::Zero();
   domain_type high = domain_type::Ones();
+
+  const unsigned seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+  std::default_random_engine generator(seed);
+  std::uniform_real_distribution<field_type> distribution(-1.0, 1.0);
 
   std::map<unsigned int, std::vector<field_type> > timeRatios;
 
@@ -85,8 +87,7 @@ int main()
     tpmc_test::Timer timer;
     for (unsigned int i = 0; i < numberOfRandomRuns; ++i) {
       // generate random data
-      std::generate(data.begin(), data.end(),
-                    []() { return -1.0 + 2.0 * static_cast<field_type>(std::rand()) / RAND_MAX; });
+      std::generate(data.begin(), data.end(), [&]() { return distribution(generator); });
       // calculate time for fulltpmc and simpletpmc
       field_type timeFullTPMC = keyTimeFullTPMC(data);
       field_type timeSimpleTPMC = keyTimeSimpleTPMC(data);
