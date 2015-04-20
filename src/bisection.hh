@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <limits>
+#include <iostream>
 
 namespace tpmc_test
 {
@@ -21,6 +22,11 @@ namespace tpmc_test
     {
       Range lowValue = f(low);
       Range highValue = f(high);
+      if (lowValue * highValue >= 0.0) {
+        std::cerr << "low: " << low << " lowValue: " << lowValue << " high: " << high
+                  << " highValue: " << highValue << "\n";
+        throw std::exception();
+      }
       Domain middle;
       for (unsigned int iteration = 0; iteration < maxIterations_; ++iteration) {
         middle = 0.5 * (high + low);

@@ -26,8 +26,8 @@ class OptimizationFunction
 public:
   typedef typename tpmc::FieldTraits<domain_type>::field_type field_type;
 
-  OptimizationFunction(const tpmc_test::Grid<dim>& grid, int angleDegree)
-      : grid_(grid)
+  OptimizationFunction(const tpmc_test::Grid<dim>& grid, int angleDegree, tpmc::AlgorithmType algorithmType)
+      : grid_(grid), mc33_(algorithmType)
   {
     field_type angle = angleDegree / 180.0 * M_PI;
     firstCenter_ << 0.5, 0.5, 0.375;
@@ -36,7 +36,7 @@ public:
     secondNormal_ << -std::sin(angle), std::cos(angle), 0;
   }
 
-  field_type operator()(field_type x) const
+  unsigned int operator()(field_type x) const
   {
     field_type ringRadius = 0.5 * (0.25 - x);
 
@@ -108,7 +108,7 @@ int main()
 
   // define general grid properties
   const int dim = 3;
-  const unsigned int numberOfElements = 32;
+  const unsigned int numberOfElements = 64;
   typedef tpmc_test::Grid<dim>::domain_type domain_type;
   typedef typename tpmc::FieldTraits<domain_type>::field_type field_type;
   domain_type low = domain_type::Zero();
@@ -123,10 +123,13 @@ int main()
   field_type ie = 1.0/numberOfElements;
 
   for (int angleDegree = 0; angleDegree < 180; ++angleDegree) {
-    OptimizationFunction<dim, domain_type> opti(grid, angleDegree);
-    auto lambda = [opti](field_type x) { return opti(x)-2.5; };
-    tpmc_test::Bisection<field_type, field_type> bisection(1e-5);
-    field_type v = bisection.apply(lambda, 0.5*ie, 2.5*ie);
-    std::cout << angleDegree << " " << std::setprecision(15) << v/ie << "\n";
+    OptimizationFunction<dim, domain_type> opti(grid, angleDegree, tpmc::AlgorithmType::fullTPMC);
+    auto lambda = [opti](field_type x) { return opti(x) == 3? -1.0 : 1.0; };
+    tpmc_test::Bisection<field_type, field_type> bisection(1e-5, 30);
+    field_type v = bisection.apply(lambda, 0.8*ie, 2.5*ie);
+    OptimizationFunction<dim, domain_type> opti2(grid, angleDegree, tpmc::AlgorithmType::simpleMC);
+    auto lambda2 = [opti2](field_type x) { return opti2(x) == 3? -1.0 : 1.0; };
+    field_type v2 = bisection.apply(lambda2, 0.8*ie, 2.5*ie);
+    std::cout << angleDegree << " " << std::setprecision(15) << v/ie << " " << v2/ie << "\n";
   }
 }
