@@ -7,7 +7,6 @@
 #include <tpmc/marchingcubes.hh>
 #include <tpmc/fieldtraits.hh>
 #include "grid.hh"
-#include "geometry.hh"
 #include "levelsets.hh"
 #include "bisection.hh"
 
@@ -134,7 +133,7 @@ int main()
   // grid width
   const field_type h = 1.0 / numberOfElements;
   // construct bisection class
-  tpmc_test::Bisection<field_type, field_type> bisection(1e-5, 30);
+  tpmc_test::Bisection<field_type, field_type> bisection(1e-6, 1e-6, 30);
 
   // loop through all angles
   for (int angleDegree = 0; angleDegree < 180; ++angleDegree) {

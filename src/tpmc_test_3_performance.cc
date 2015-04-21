@@ -1,15 +1,10 @@
+#include <map>
 #include <iostream>
-#include <iomanip>
-#include <numeric>
-#include <random>
-#include <boost/range/algorithm/transform.hpp>
-#include <boost/pending/disjoint_sets.hpp>
 #include <Eigen/Dense>
-#include <tpmc/marchingcubes.hh>
 #include <tpmc/fieldtraits.hh>
-#include "timer.hh"
+#include <tpmc/marchingcubes.hh>
 #include "grid.hh"
-#include "geometry.hh"
+#include "timer.hh"
 
 namespace tpmc
 {

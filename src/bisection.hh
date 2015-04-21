@@ -4,6 +4,7 @@
 #include <functional>
 #include <limits>
 #include <iostream>
+#include "exceptions.hh"
 
 namespace tpmc_test
 {
@@ -11,9 +12,10 @@ namespace tpmc_test
   class Bisection
   {
   public:
-    explicit Bisection(const Domain& tolerance,
+    explicit Bisection(const Domain& domainTolerance, const Range& rangeTolerance,
                        unsigned int maxIterations = std::numeric_limits<unsigned int>::max())
-        : tolerance_(tolerance)
+        : domainTolerance_(domainTolerance)
+        , rangeTolerance_(rangeTolerance)
         , maxIterations_(maxIterations)
     {
     }
@@ -23,15 +25,14 @@ namespace tpmc_test
       Range lowValue = f(low);
       Range highValue = f(high);
       if (lowValue * highValue >= 0.0) {
-        std::cerr << "low: " << low << " lowValue: " << lowValue << " high: " << high
-                  << " highValue: " << highValue << "\n";
-        throw std::exception();
+        throw IllegalArgumentException(
+            "precondition not met: values of low and high have the same sign");
       }
       Domain middle;
       for (unsigned int iteration = 0; iteration < maxIterations_; ++iteration) {
         middle = 0.5 * (high + low);
         Range middleValue = f(middle);
-        if (std::abs(middleValue) < tolerance_  || std::abs(high-low) < tolerance_)
+        if (std::abs(middleValue) < rangeTolerance_ || std::abs(high - low) < domainTolerance_)
           break;
         if (middleValue * lowValue > 0) {
           low = middle;
@@ -45,7 +46,8 @@ namespace tpmc_test
     }
 
   private:
-    Domain tolerance_;
+    Domain domainTolerance_;
+    Range rangeTolerance_;
     unsigned int maxIterations_;
   };
 }
