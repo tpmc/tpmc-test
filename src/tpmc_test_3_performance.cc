@@ -52,8 +52,13 @@ private:
   tpmc::MarchingCubes<field_type, dim, domain_type> mc33_;
 };
 
-int main()
+int main(int argc, char** argv)
 {
+  if (argc < 2) {
+    std::cerr << "Error: no output file provided. call:\n" << argv[0] << " <outputfilename>\n";
+    return -1;
+  }
+  const std::string outputfilename = argv[1];
   // define general grid properties
   const int dim = 3;
   const std::vector<unsigned int> numbersOfElements{ { 16, 32, 64, 128, 256 } };
@@ -101,7 +106,8 @@ int main()
               << " elements: " << timer.total().count() << "s\n";
   }
   // output statistics
-  std::cout << "N min max mean std\n";
+  std::ofstream output(outputfilename);
+  output << "N min max mean std\n";
   for (auto x : timeRatios) {
     field_type min
         = std::accumulate(x.second.begin(), x.second.end(), std::numeric_limits<field_type>::max(),
@@ -115,6 +121,6 @@ int main()
       st += (v - mean) * (v - mean);
     }
     st = std::sqrt(st / (x.second.size() - 1));
-    std::cout << x.first << " " << min << " " << max << " " << mean << " " << st << "\n";
+    output << x.first << " " << min << " " << max << " " << mean << " " << st << "\n";
   }
 }

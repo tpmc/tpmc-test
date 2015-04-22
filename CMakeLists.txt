@@ -1,6 +1,8 @@
 project(tpmc_test)
 cmake_minimum_required(VERSION 2.8.6)
 
+enable_testing()
+
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 list(APPEND CMAKE_CXX_FLAGS "-std=c++11")
 

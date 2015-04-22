@@ -112,8 +112,13 @@ private:
   domain_type secondCenter_;
 };
 
-int main()
+int main(int argc, char** argv)
 {
+  if (argc < 2) {
+    std::cerr << "Error: no output file provided. call:\n" << argv[0] << " <outputfilename>\n";
+    return -1;
+  }
+  const std::string outputfilename = argv[1];
   // seed random generator
   srand(time(0));
 
@@ -135,6 +140,7 @@ int main()
   // construct bisection class
   tpmc_test::Bisection<field_type, field_type> bisection(1e-6, 1e-6, 30);
 
+  std::ofstream output(outputfilename);
   // loop through all angles
   for (int angleDegree = 0; angleDegree < 180; ++angleDegree) {
     // create functor for full tpmc
@@ -150,7 +156,7 @@ int main()
     field_type vFullTPMC = bisection.apply(lambdaFullTPMC, 0.8 * h, 2.5 * h);
     field_type vSimpleTPMC = bisection.apply(lambdaSimpleTPMC, 0.8 * h, 2.5 * h);
     // output to console
-    std::cout << angleDegree << " " << std::setprecision(15) << vFullTPMC / h << " "
-              << vSimpleTPMC / h << "\n";
+    output << angleDegree << " " << std::setprecision(15) << vFullTPMC / h << " "
+           << vSimpleTPMC / h << "\n";
   }
 }

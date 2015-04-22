@@ -18,8 +18,13 @@ namespace tpmc
   };
 }
 
-int main()
+int main(int argc, char** argv)
 {
+  if (argc < 2) {
+    std::cerr << "Error: no output file provided. call:\n" << argv[0] << " <outputfilename>\n";
+    return -1;
+  }
+  const std::string outputfilename = argv[1];
   // seed random generator
   srand(time(0));
   tpmc_test::Timer timer;
@@ -108,9 +113,9 @@ int main()
 
     std::cout << "tests for " << numberOfElements << " elements: " << timer.lap().count() << "s\n";
   }
-  std::cout << "\n";
+  std::ofstream output(outputfilename);
   // output statistics
-  std::cout << "N min max mean std\n";
+  output << "N min max mean std\n";
   for (auto x : relativeErrors) {
     field_type min
         = std::accumulate(x.second.begin(), x.second.end(), std::numeric_limits<field_type>::max(),
@@ -124,9 +129,8 @@ int main()
       st += (v - mean) * (v - mean);
     }
     st = std::sqrt(st / (x.second.size() - 1));
-    std::cout << x.first << " " << min << " " << max << " " << mean << " " << st << "\n";
+    output << x.first << " " << min << " " << max << " " << mean << " " << st << "\n";
   }
-  std::cout << "\n";
   std::cout << "statistics: " << timer.lap().count() << "s\n";
   std::cout << "total: " << timer.total().count() << "s\n";
 }
