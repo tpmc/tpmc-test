@@ -47,6 +47,9 @@ public:
     return time;
   }
 
+  const tpmc::MarchingCubes<field_type, dim, domain_type>& getMC() const {
+    return mc33_;
+  }
 private:
   tpmc_test::Grid<dim> grid_;
   tpmc::MarchingCubes<field_type, dim, domain_type> mc33_;
@@ -74,6 +77,9 @@ int main(int argc, char** argv)
   std::uniform_real_distribution<field_type> distribution(-1.0, 1.0);
 
   std::map<unsigned int, std::vector<field_type> > timeRatios;
+  std::map<unsigned int, unsigned int> keyGenerations;
+  std::map<unsigned int, unsigned int> faceTests;
+  std::map<unsigned int, unsigned int> centerTests;
 
   for (auto numberOfElements : numbersOfElements) {
     // construct Grid
@@ -101,6 +107,10 @@ int main(int argc, char** argv)
       // add time ratio to output
       timeRatios[numberOfElements].push_back(timeFullTPMC / timeSimpleTPMC);
     }
+    keyGenerations[numberOfElements] = keyTimeFullTPMC.getMC().profKeyGenerations();
+    faceTests[numberOfElements] = keyTimeFullTPMC.getMC().profFaceTests();
+    centerTests[numberOfElements] = keyTimeFullTPMC.getMC().profCenterTests();
+
     std::cout << "time for " << numberOfRunsPerDataset << " runs of " << numberOfRandomRuns
               << " random datasets with " << numberOfElements
               << " elements: " << timer.total().count() << "s\n";
@@ -122,5 +132,15 @@ int main(int argc, char** argv)
     }
     st = std::sqrt(st / (x.second.size() - 1));
     output << x.first << " " << min << " " << max << " " << mean << " " << st << "\n";
+  }
+  output << "\n";
+  output << "N keyGen faceTests relFaceTests centerTests relCenterTests\n";
+  for (auto numberOfElements: numbersOfElements) {
+    output << numberOfElements << " " << keyGenerations[numberOfElements] << " "
+           << faceTests[numberOfElements] << " "
+           << static_cast<double>(faceTests[numberOfElements]) / keyGenerations[numberOfElements]
+           << " " << centerTests[numberOfElements] << " "
+           << static_cast<double>(centerTests[numberOfElements]) / keyGenerations[numberOfElements]
+           << "\n";
   }
 }
