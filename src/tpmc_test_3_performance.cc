@@ -77,9 +77,9 @@ int main(int argc, char** argv)
   std::uniform_real_distribution<field_type> distribution(-1.0, 1.0);
 
   std::map<unsigned int, std::vector<field_type> > timeRatios;
-  std::map<unsigned int, unsigned int> keyGenerations;
-  std::map<unsigned int, unsigned int> faceTests;
-  std::map<unsigned int, unsigned int> centerTests;
+  std::map<unsigned int, unsigned long> keyGenerations;
+  std::map<unsigned int, unsigned long> faceTests;
+  std::map<unsigned int, unsigned long> centerTests;
 
   for (auto numberOfElements : numbersOfElements) {
     // construct Grid
