@@ -20,7 +20,6 @@ namespace tpmc_test
     domain_type a = v0 - v1 - v2 + v3;
     domain_type b = v1 - v0;
     domain_type c = v2 - v0;
-    domain_type d = v0;
     field_type ca = a.squaredNorm();
     field_type cb = a.dot(b);
     field_type cc = b.squaredNorm();

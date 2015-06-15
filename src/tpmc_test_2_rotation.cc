@@ -89,8 +89,8 @@ public:
       }
     }
     // merge all local groups belonging to a same vertex
-    for (int i = 0; i < localGroups.size(); ++i) {
-      for (int j = 1; j < localGroups[i].size(); ++j) {
+    for (std::size_t i = 0; i < localGroups.size(); ++i) {
+      for (std::size_t j = 1; j < localGroups[i].size(); ++j) {
         dsets.union_set(localGroups[i][0], localGroups[i][j]);
       }
     }

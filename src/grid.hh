@@ -39,6 +39,7 @@ namespace tpmc_test
         current_(i) = 0;
         ++current_(i + 1);
       }
+      return *this;
     }
 
     GridIndex operator++(int)
