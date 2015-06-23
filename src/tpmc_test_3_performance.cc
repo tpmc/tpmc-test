@@ -144,8 +144,7 @@ int main(int argc, char** argv)
   const std::string outputfilename = argv[1];
   // define general grid properties
   const int dim = 3;
-  // const std::vector<unsigned int> numbersOfElements{ { 16, 32, 64, 128, 256 } };
-  const std::vector<unsigned int> numbersOfElements{ { 16, 32 } };
+  const std::vector<unsigned int> numbersOfElements{ { 16, 32, 64, 128, 256 } };
   const unsigned int numberOfRandomRuns = 30;
   const unsigned int numberOfRunsPerDataset = 30;
   typedef tpmc_test::Grid<dim>::domain_type domain_type;
