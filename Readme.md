@@ -1,8 +1,4 @@
 # Topology preserving marching cubes (TPMC)
-This document describes the procedure to reproduce the results from the paper:
-
-**add paper here**
-
 The test programs are build using Cmake.
 
 In addition to the TPMC library, the test programs need the following third party libraries:
