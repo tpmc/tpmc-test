@@ -1,4 +1,7 @@
 # Tests for the topology preserving marching cubes (TPMC)
+
+[![Build Status](https://travis-ci.org/tpmc/tpmc-test.svg?branch=master)](https://travis-ci.org/tpmc/tpmc-test)
+
 The test programs are build using Cmake.
 
 In addition to the TPMC library, the test programs need the following third party libraries:
