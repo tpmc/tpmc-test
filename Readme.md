@@ -14,12 +14,6 @@ cd build;
 cmake ..
 ```
 
-If the TPMC library is not installed in a default search path, you can specify its location by calling
-
-```
-cmake -DTPMC_PREFIX=<tpmc-install-directory> ..;
-```
-
 When the cmake call was successfull, you can build and run the test problems by calling
 
 ```
