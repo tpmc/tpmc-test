@@ -4,35 +4,38 @@
 
 The test programs are build using Cmake.
 
-In addition to the TPMC library, the test programs need the following third party libraries:
+The test programs need the following third party libraries:
 
 - Eigen3
 - Boost
+- python-numpy
 
-Create a build directory and call cmake:
+To get started, clone the git repository, create a build directory and call cmake:
 
 ```
-mkdir build;
-cd build;
+git clone https://github.com/tpmc/tpmc-test.git <your-tpmc-test-dir>
+cd <your-tpmc-test-dir>
+mkdir build
+cd build
 cmake ..
 ```
 
 When the cmake call was successfull, you can build and run the test problems by calling
 
 ```
-make check;
+make check
 ```
 
 in the build directory. The result of the test is stored in a file `test<n>.log` where `<n>` denotes the test number. If you want to compile the test programs without running them, call
 
 ```
-make;
+make
 ```
 
 The tests are located in the `src` subdirectory and can be run by calling
 
 ```
-./<test-name> output.log;
+./<test-name> output.log
 ```
 
 where `<test-name>` denotes the name of the test executable.
