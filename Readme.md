@@ -39,3 +39,13 @@ The tests are located in the `src` subdirectory and can be run by calling
 ```
 
 where `<test-name>` denotes the name of the test executable.
+
+License
+-------
+
+The TPMC library, headers and test programs are free open-source
+software, dual-licensed under version 3 or later of the GNU Lesser
+General Public License and version 2 of the GNU General Public License
+with a special run-time exception.
+
+See the file LICENSE.txt for full copying permissions.
