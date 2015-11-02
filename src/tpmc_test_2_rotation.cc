@@ -9,6 +9,9 @@
 #include "grid.hh"
 #include "levelsets.hh"
 #include "bisection.hh"
+#include "io.hh"
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
 
 namespace tpmc
 {
@@ -114,17 +117,28 @@ private:
 
 int main(int argc, char** argv)
 {
-  if (argc < 2) {
-    std::cerr << "Error: no output file provided. call:\n" << argv[0] << " <outputfilename>\n";
-    return -1;
+  auto path_info = tpmc_test::pathInfo(argv[0]);
+  std::string inifile =
+    TOSTRING(TPMC_TEST_DIR) + path_info.second + ".ini";
+  if (argc >= 2) {
+    inifile = argv[1];
   }
-  const std::string outputfilename = argv[1];
+
+  // read configuration
+  std::cout << "reading configuration " << inifile << std::endl;
+  auto param = tpmc_test::parseIniFile(inifile);
+  const unsigned int angleStepSize = param["angleStepSize"].to_uint();
+  const unsigned int numberOfElements = param["numberOfElements"].to_uint();
+  const std::string referenceFile = param["referenceFile"];
+  const double bisectionTolerance = param["bisectionTolerance"].to_double();
+  const double fuzzyTolerance = param["fuzzyTolerance"].to_double();
+  const std::string outputFilename = param["outputFilename"];
+
   // seed random generator
   srand(time(0));
 
   // define general grid properties
   const int dim = 3;
-  const unsigned int numberOfElements = 64;
   typedef tpmc_test::Grid<dim>::domain_type domain_type;
   typedef typename tpmc::FieldTraits<domain_type>::field_type field_type;
   domain_type low = domain_type::Zero();
@@ -134,15 +148,19 @@ int main(int argc, char** argv)
   typedef tpmc_test::Grid<dim>::dimension_type dimension_type;
   dimension_type elements = dimension_type::Constant(numberOfElements);
   tpmc_test::Grid<dim> grid(elements, low, high);
-
   // grid width
   const field_type h = 1.0 / numberOfElements;
   // construct bisection class
-  tpmc_test::Bisection<field_type, field_type> bisection(1e-6, 1e-6, 30);
+  tpmc_test::Bisection<field_type, field_type> bisection(bisectionTolerance, bisectionTolerance, 30);
 
-  std::ofstream output(outputfilename);
+  // read reference file
+  auto referenceValues = tpmc_test::readFile( tpmc_test::pathInfo(inifile).first + referenceFile );
+  auto reference = referenceValues.begin();
+
+  std::ofstream output(outputFilename);
+  bool success = true;
   // loop through all angles
-  for (int angleDegree = 0; angleDegree < 180; ++angleDegree) {
+  for (int angleDegree = 0; angleDegree <= 180; angleDegree+=angleStepSize, reference++) {
     // create functor for full tpmc
     ConnectedComponentsFunctor<dim, domain_type> ccFullTPMC(grid, angleDegree,
                                                             tpmc::AlgorithmType::fullTPMC);
@@ -155,8 +173,24 @@ int main(int argc, char** argv)
     // compute topology change via bisection
     field_type vFullTPMC = bisection.apply(lambdaFullTPMC, 0.8 * h, 2.5 * h);
     field_type vSimpleTPMC = bisection.apply(lambdaSimpleTPMC, 0.8 * h, 2.5 * h);
-    // output to console
+    // give visual feed back
+    std::cout << "." << std::flush;
+    // check result against reference file
+    auto refValues = tpmc_test::ini_value(*reference).to_vector();
+    if (refValues[0].to_int() != angleDegree)
+      throw tpmc_test::TpmcTestException("data in reference file seems to be for a dofferent test");
+    success &= std::abs(1.0 - refValues[1].to_double()/(vFullTPMC / h)) < fuzzyTolerance;
+    success &= std::abs(1.0 - refValues[2].to_double()/(vSimpleTPMC / h)) < fuzzyTolerance;
+
+    // output to log file
     output << angleDegree << " " << std::setprecision(15) << vFullTPMC / h << " "
-           << vSimpleTPMC / h << "\n";
+           << vSimpleTPMC / h << std::endl;
+  }
+  std::cout << std::endl;
+
+  if (!success)
+  {
+    std::cerr << "Failed to reproduce reference solution" << std::endl;
+    return -1;
   }
 }

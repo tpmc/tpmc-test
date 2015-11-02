@@ -16,7 +16,7 @@ target_link_libraries(tpmc_test_3_performance tpmc_test)
 add_dependencies(tpmc_test tpmc)
 
 add_test(test1 tpmc_test_1_tori test1.log)
-add_test(test2 tpmc_test_2_rotation test2.log)
+add_test(test2 tpmc_test_2_rotation)
 add_test(test3 tpmc_test_3_performance test3.log)
 
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} DEPENDS tpmc_test_1_tori tpmc_test_2_rotation tpmc_test_3_performance)
