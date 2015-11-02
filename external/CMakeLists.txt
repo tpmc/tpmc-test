@@ -5,7 +5,7 @@ set(tpmc_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/tpmc/install")
 
 ExternalProject_Add(tpmc
   PREFIX ${tpmc_PREFIX}
-  GIT_REPOSITORY "https://www.github.com/tpmc/tpmc.git"
+  GIT_REPOSITORY ${TPMC_UPSTREAM}
   GIT_TAG "master"
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
