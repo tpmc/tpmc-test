@@ -134,9 +134,6 @@ int main(int argc, char** argv)
   const double fuzzyTolerance = param["fuzzyTolerance"].to_double();
   const std::string outputFilename = param["outputFilename"];
 
-  // seed random generator
-  srand(time(0));
-
   // define general grid properties
   const int dim = 3;
   typedef tpmc_test::Grid<dim>::domain_type domain_type;
@@ -154,7 +151,7 @@ int main(int argc, char** argv)
   tpmc_test::Bisection<field_type, field_type> bisection(bisectionTolerance, bisectionTolerance, 30);
 
   // read reference file
-  std::vector<ini_values> referenceValues;
+  std::vector<std::string> referenceValues;
   bool checkReferenceSolution = (referenceFile != "");
   if (checkReferenceSolution)
     referenceValues = tpmc_test::readFile( tpmc_test::pathInfo(inifile).first + referenceFile );
@@ -163,7 +160,7 @@ int main(int argc, char** argv)
   std::ofstream output(outputFilename);
   bool success = true;
   // loop through all angles
-  for (int angleDegree = 0; angleDegree <= 180; angleDegree+=angleStepSize, reference++) {
+  for (int angleDegree = 0; angleDegree <= 180; angleDegree+=angleStepSize) {
     // create functor for full tpmc
     ConnectedComponentsFunctor<dim, domain_type> ccFullTPMC(grid, angleDegree,
                                                             tpmc::AlgorithmType::fullTPMC);
@@ -181,11 +178,12 @@ int main(int argc, char** argv)
     // check result against reference file
     if (checkReferenceSolution)
     {
-      std::vector<ini_values> refValues = reference->to_vector();
+      std::vector<tpmc_test::ini_value> refValues = tpmc_test::ini_value(*reference).to_vector();
       if (refValues[0].to_int() != angleDegree)
-        throw tpmc_test::TpmcTestException("data in reference file seems to be for a dofferent test");
-      success &= std::abs(1.0 - refValues[1].to_double()/(vFullTPMC / h)) < fuzzyTolerance;
+        throw tpmc_test::TpmcTestException("data in reference file seems to be for a different test");
+      success &= std::abs(1.0 - refValues[1].to_double()/(vFullTPMC / h))   < fuzzyTolerance;
       success &= std::abs(1.0 - refValues[2].to_double()/(vSimpleTPMC / h)) < fuzzyTolerance;
+      reference++;
     }
 
     // output to log file
