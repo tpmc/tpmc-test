@@ -154,7 +154,10 @@ int main(int argc, char** argv)
   tpmc_test::Bisection<field_type, field_type> bisection(bisectionTolerance, bisectionTolerance, 30);
 
   // read reference file
-  auto referenceValues = tpmc_test::readFile( tpmc_test::pathInfo(inifile).first + referenceFile );
+  std::vector<ini_values> referenceValues;
+  bool checkReferenceSolution = (referenceFile != "");
+  if (checkReferenceSolution)
+    referenceValues = tpmc_test::readFile( tpmc_test::pathInfo(inifile).first + referenceFile );
   auto reference = referenceValues.begin();
 
   std::ofstream output(outputFilename);
@@ -176,11 +179,14 @@ int main(int argc, char** argv)
     // give visual feed back
     std::cout << "." << std::flush;
     // check result against reference file
-    auto refValues = tpmc_test::ini_value(*reference).to_vector();
-    if (refValues[0].to_int() != angleDegree)
-      throw tpmc_test::TpmcTestException("data in reference file seems to be for a dofferent test");
-    success &= std::abs(1.0 - refValues[1].to_double()/(vFullTPMC / h)) < fuzzyTolerance;
-    success &= std::abs(1.0 - refValues[2].to_double()/(vSimpleTPMC / h)) < fuzzyTolerance;
+    if (checkReferenceSolution)
+    {
+      std::vector<ini_values> refValues = reference->to_vector();
+      if (refValues[0].to_int() != angleDegree)
+        throw tpmc_test::TpmcTestException("data in reference file seems to be for a dofferent test");
+      success &= std::abs(1.0 - refValues[1].to_double()/(vFullTPMC / h)) < fuzzyTolerance;
+      success &= std::abs(1.0 - refValues[2].to_double()/(vSimpleTPMC / h)) < fuzzyTolerance;
+    }
 
     // output to log file
     output << angleDegree << " " << std::setprecision(15) << vFullTPMC / h << " "
