@@ -8,6 +8,9 @@
 #include "geometry.hh"
 #include "levelsets.hh"
 #include "timer.hh"
+#include "io.hh"
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
 
 namespace tpmc
 {
@@ -20,19 +23,31 @@ namespace tpmc
 
 int main(int argc, char** argv)
 {
-  if (argc < 2) {
-    std::cerr << "Error: no output file provided. call:\n" << argv[0] << " <outputfilename>\n";
-    return -1;
+  auto path_info = tpmc_test::pathInfo(argv[0]);
+  std::string inifile =
+    TOSTRING(TPMC_TEST_DIR) + path_info.second + ".ini";
+  if (argc >= 2) {
+    inifile = argv[1];
   }
-  const std::string outputfilename = argv[1];
+
+  // read configuration
+  std::cout << "reading configuration " << inifile << std::endl;
+  auto param = tpmc_test::parseIniFile(inifile);
+  const unsigned int numberOfLevels = param["numberOfLevels"].to_uint();
+  const unsigned int numberOfRandomShifts = param["numberOfRandomShifts"].to_uint();
+  const std::string referenceFile = param["referenceFile"];
+  const double fuzzyTolerance = param["fuzzyTolerance"].to_double();
+  const std::string outputFilename = param["outputFilename"];
+
   // seed random generator
   srand(time(0));
   tpmc_test::Timer timer;
 
   // define general grid properties
   const int dim = 3;
-  const std::vector<unsigned int> numbersOfElements{ { 16, 32, 64, 128, 256 } };
-  const unsigned int numberOfRandomShifts = 30;
+  std::vector<unsigned int> numbersOfElements = {{16}};
+  for (unsigned int l = 1; l<numberOfLevels; l++)
+      numbersOfElements.push_back(numbersOfElements.back() * 2);
   typedef tpmc_test::Grid<dim>::domain_type domain_type;
   domain_type low = domain_type::Zero();
   domain_type high = domain_type::Ones();
@@ -113,9 +128,20 @@ int main(int argc, char** argv)
 
     std::cout << "tests for " << numberOfElements << " elements: " << timer.lap().count() << "s\n";
   }
-  std::ofstream output(outputfilename);
+
+
+  // read reference file
+  std::vector<std::string> referenceValues;
+  bool checkReferenceSolution = (referenceFile != "");
+  if (checkReferenceSolution)
+    referenceValues = tpmc_test::readFile( tpmc_test::pathInfo(inifile).first + referenceFile );
+  auto reference = referenceValues.begin();
+
   // output statistics
+  bool success = true;
+  std::ofstream output(outputFilename);
   output << "N min max mean std\n";
+  reference++; // skip title line
   for (auto x : relativeErrors) {
     field_type min
         = std::accumulate(x.second.begin(), x.second.end(), std::numeric_limits<field_type>::max(),
@@ -129,8 +155,29 @@ int main(int argc, char** argv)
       st += (v - mean) * (v - mean);
     }
     st = std::sqrt(st / (x.second.size() - 1));
+
+    // check result against reference file
+    if (checkReferenceSolution)
+    {
+      std::vector<tpmc_test::ini_value> refValues = tpmc_test::ini_value(*reference).to_vector();
+      if (refValues[0].to_uint() != x.first)
+        throw tpmc_test::TpmcTestException("data in reference file seems to be for a different test");
+      success &= std::abs(1.0 - refValues[1].to_double()/min)  < fuzzyTolerance;
+      success &= std::abs(1.0 - refValues[2].to_double()/max)  < fuzzyTolerance;
+      success &= std::abs(1.0 - refValues[3].to_double()/mean) < fuzzyTolerance;
+      reference++;
+    }
+
     output << x.first << " " << min << " " << max << " " << mean << " " << st << "\n";
   }
+  output.close();
+
   std::cout << "statistics: " << timer.lap().count() << "s\n";
   std::cout << "total: " << timer.total().count() << "s\n";
+
+  if (!success)
+  {
+    std::cerr << "Failed to reproduce reference solution" << std::endl;
+    return -1;
+  }
 }
