@@ -157,12 +157,12 @@ int main(int argc, char** argv)
     // check result against reference file
     if (checkReferenceSolution)
     {
-      std::vector<tpmc_test::ini_value> refValues = tpmc_test::ini_value(*reference).to_vector();
-      if (refValues[0].to_uint() != x.first)
+      auto refValues = tpmc_test::parse_vector<double>(*reference);
+      if ((unsigned int)(refValues[0]) != x.first)
         throw tpmc_test::TpmcTestException("data in reference file seems to be for a different test");
-      success &= std::abs(1.0 - refValues[1].to_double()/min)  < fuzzyTolerance;
-      success &= std::abs(1.0 - refValues[2].to_double()/max)  < fuzzyTolerance;
-      success &= std::abs(1.0 - refValues[3].to_double()/mean) < fuzzyTolerance;
+      success &= std::abs(1.0 - refValues[1]/min)  < fuzzyTolerance;
+      success &= std::abs(1.0 - refValues[2]/max)  < fuzzyTolerance;
+      success &= std::abs(1.0 - refValues[3]/mean) < fuzzyTolerance;
       reference++;
     }
 

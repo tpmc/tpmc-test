@@ -158,7 +158,7 @@ int main(int argc, char** argv)
   std::ofstream output(outputFilename);
   bool success = true;
   // loop through all angles
-  for (int angleDegree = 0; angleDegree <= 180; angleDegree+=angleStepSize) {
+  for (unsigned int angleDegree = 0; angleDegree <= 180; angleDegree+=angleStepSize) {
     // create functor for full tpmc
     ConnectedComponentsFunctor<dim, domain_type> ccFullTPMC(grid, angleDegree,
                                                             tpmc::AlgorithmType::fullTPMC);
@@ -176,11 +176,11 @@ int main(int argc, char** argv)
     // check result against reference file
     if (checkReferenceSolution)
     {
-      std::vector<tpmc_test::ini_value> refValues = tpmc_test::ini_value(*reference).to_vector();
-      if (refValues[0].to_int() != angleDegree)
+      auto refValues = tpmc_test::parse_vector<double>(*reference);
+      if ((unsigned int)(refValues[0]) != angleDegree)
         throw tpmc_test::TpmcTestException("data in reference file seems to be for a different test");
-      success &= std::abs(1.0 - refValues[1].to_double()/(vFullTPMC / h))   < fuzzyTolerance;
-      success &= std::abs(1.0 - refValues[2].to_double()/(vSimpleTPMC / h)) < fuzzyTolerance;
+      success &= std::abs(1.0 - refValues[1]/(vFullTPMC / h))   < fuzzyTolerance;
+      success &= std::abs(1.0 - refValues[2]/(vSimpleTPMC / h)) < fuzzyTolerance;
       reference++;
     }
 

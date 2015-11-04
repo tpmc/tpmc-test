@@ -34,29 +34,16 @@ namespace tpmc_test {
     return lines;
   }
 
-  class ini_value : public std::string
-  {
-  public:
-    ini_value() = default;
-    ini_value(std::string value) : std::string(value) {}
 
-    double to_double() const {
-      return std::atof(std::string::c_str());
-    }
-    unsigned int to_uint() const {
-      return std::atoi(std::string::c_str());
-    }
-    int to_int() const {
-      return std::atoi(std::string::c_str());
-    }
-    std::vector<ini_value> to_vector() const {
-      std::stringstream ss(*this);
-      std::istream_iterator<std::string> begin(ss);
-      std::istream_iterator<std::string> end;
-      std::vector<ini_value> vec(begin, end);
-      return vec;
-    }
-  };
+  template<typename T>
+  std::vector<T> parse_vector(const std::string & value)
+  {
+    std::stringstream ss(value);
+    std::istream_iterator<T> begin(ss);
+    std::istream_iterator<T> end;
+    std::vector<T> vec(begin, end);
+    return vec;
+  }
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)

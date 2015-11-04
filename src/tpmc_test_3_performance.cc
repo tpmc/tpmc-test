@@ -250,20 +250,20 @@ int main(int argc, char** argv)
     // check result against reference file
     if (checkReferenceSolution)
     {
-      std::vector<tpmc_test::ini_value> refValues = tpmc_test::ini_value(*reference).to_vector();
+      auto refValues = tpmc_test::parse_vector<double>(*reference);
       double tolerance = fuzzyTolerance/std::sqrt(keyGenerations[numberOfElements]);
-      if (refValues[0].to_uint() != numberOfElements)
+      if ((unsigned int)(refValues[0]) != numberOfElements)
         throw tpmc_test::TpmcTestException("data in reference file seems to be for a different test");
-      success &= (refValues[1].to_uint() == keyGenerations[numberOfElements]);
-      success &= std::abs(1.0 - refValues[2].to_double()/faceTests[numberOfElements]) < tolerance;
-      success &= std::abs(1.0 - refValues[3].to_double()/relFaceTests) < tolerance;
-      success &= std::abs(1.0 - refValues[4].to_double()/centerTests[numberOfElements]) < tolerance;
-      success &= std::abs(1.0 - refValues[5].to_double()/relCenterTests) < tolerance;
+      success &= ((unsigned int)(refValues[1]) == keyGenerations[numberOfElements]);
+      success &= std::abs(1.0 - refValues[2]/faceTests[numberOfElements]) < tolerance;
+      success &= std::abs(1.0 - refValues[3]/relFaceTests) < tolerance;
+      success &= std::abs(1.0 - refValues[4]/centerTests[numberOfElements]) < tolerance;
+      success &= std::abs(1.0 - refValues[5]/relCenterTests) < tolerance;
       // std::cerr << "============ " << numberOfElements << "\t" << tolerance << std::endl;
-      // std::cerr << 1.0 - refValues[2].to_double()/faceTests[numberOfElements] << std::endl;
-      // std::cerr << 1.0 - refValues[3].to_double()/relFaceTests << std::endl;
-      // std::cerr << 1.0 - refValues[4].to_double()/centerTests[numberOfElements] << std::endl;
-      // std::cerr << 1.0 - refValues[5].to_double()/relCenterTests << std::endl;
+      // std::cerr << 1.0 - refValues[2]/faceTests[numberOfElements] << std::endl;
+      // std::cerr << 1.0 - refValues[3]/relFaceTests << std::endl;
+      // std::cerr << 1.0 - refValues[4]/centerTests[numberOfElements] << std::endl;
+      // std::cerr << 1.0 - refValues[5]/relCenterTests << std::endl;
       reference++;
     }
 
