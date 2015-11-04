@@ -1,5 +1,5 @@
-#ifndef TPMC_TEST_IO_HH
-#define TPMC_TEST_IO_HH
+#ifndef TPMC_TEST_UTILITY_HH
+#define TPMC_TEST_UTILITY_HH
 
 #include <fstream>
 #include <map>
@@ -7,6 +7,7 @@
 #include <sstream>
 #include <cstdlib>
 #include "exceptions.hh"
+#include <boost/filesystem.hpp>
 
 namespace tpmc_test {
 
@@ -57,52 +58,23 @@ namespace tpmc_test {
     }
   };
 
-  std::map<std::string,ini_value> parseIniFile(std::string fname)
-  {
-    auto lines = readFile(fname);
-    std::map<std::string,ini_value> param;
-    // parse content
-    for (const auto & line : lines)
-    {
-      std::size_t pos;
-      pos = line.find('=');
-      if (pos != std::string::npos)
-      {
-        std::string key   = line.substr(0, pos);
-        ini_value   value = line.substr(pos+1, line.size()-pos-1);
-        param[trim(key)] = trim(value);
-      }
-    }
-    return param;
-  }
-
-  std::pair<std::string,std::string> pathInfo(std::string fname)
-  {
-    std::string dir = "";
-    std::size_t pos = fname.rfind('/');
-    if (pos != std::string::npos)
-    {
-        dir   = fname.substr(0, pos+1);
-        fname = fname.substr(pos+1, fname.size()-pos-1);
-    }
-    return std::pair<std::string,std::string>(dir,fname);
-  }
-
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 
-  inline std::string parseCMDLineParameters(int argc, char** argv)
+  inline boost::filesystem::path parseCMDLineParameters(int argc, char** argv)
   {
-    std::string application = tpmc_test::pathInfo(argv[0]).second;
+    boost::filesystem::path application(argv[0]);
+    application = application.filename();
+    std::string testset = argv[1];
+    std::string testdir = testset + "_tests";
     if (argc < 2
-      or (std::string("basic") != argv[1] and std::string("full") != argv[1]))
+      or (std::string("basic") != testset and std::string("full") != testset))
     {
       std::cerr << "Error: no testtype provided.\nUsage:\t"
                 << application << " [basic|full]\n";
       exit(-1);
     }
-    return std::string(TOSTRING(TPMC_SRC_DIR)) +
-      argv[1] + "_tests/" + application + ".ini";
+    return boost::filesystem::path(TOSTRING(TPMC_SRC_DIR)) / testdir / application.replace_extension(".ini");
   }
 
 #undef STRINGIFY

@@ -3,13 +3,15 @@
 #include <numeric>
 #include <boost/range/algorithm/transform.hpp>
 #include <boost/pending/disjoint_sets.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ini_parser.hpp>
 #include <Eigen/Dense>
 #include <tpmc/marchingcubes.hh>
 #include <tpmc/fieldtraits.hh>
 #include "grid.hh"
 #include "levelsets.hh"
 #include "bisection.hh"
-#include "io.hh"
+#include "utility.hh"
 
 namespace tpmc
 {
@@ -113,20 +115,22 @@ private:
   domain_type secondCenter_;
 };
 
+namespace ptree = boost::property_tree;
+
 int main(int argc, char** argv)
 {
-  // parse command line parameters
-  std::string inifile = tpmc_test::parseCMDLineParameters(argc,argv);
+  auto inifile = tpmc_test::parseCMDLineParameters(argc,argv);
 
   // read configuration
   std::cout << "reading configuration " << inifile << std::endl;
-  auto param = tpmc_test::parseIniFile(inifile);
-  const unsigned int angleStepSize = param["angleStepSize"].to_uint();
-  const unsigned int numberOfElements = param["numberOfElements"].to_uint();
-  const std::string referenceFile = param["referenceFile"];
-  const double bisectionTolerance = param["bisectionTolerance"].to_double();
-  const double fuzzyTolerance = param["fuzzyTolerance"].to_double();
-  const std::string outputFilename = param["outputFilename"];
+  ptree::ptree param;
+  ptree::read_ini(inifile.string(), param);
+  const unsigned int angleStepSize = param.get<unsigned int>("angleStepSize");
+  const unsigned int numberOfElements = param.get<unsigned int>("numberOfElements");
+  const std::string referenceFile = param.get<std::string>("referenceFile");
+  const double bisectionTolerance = param.get<double>("bisectionTolerance");
+  const double fuzzyTolerance = param.get<double>("fuzzyTolerance");
+  const std::string outputFilename = param.get<std::string>("outputFilename");
 
   // define general grid properties
   const int dim = 3;
@@ -148,7 +152,7 @@ int main(int argc, char** argv)
   std::vector<std::string> referenceValues;
   bool checkReferenceSolution = (referenceFile != "");
   if (checkReferenceSolution)
-    referenceValues = tpmc_test::readFile( tpmc_test::pathInfo(inifile).first + referenceFile );
+    referenceValues = tpmc_test::readFile( (inifile.parent_path() / referenceFile).string() );
   auto reference = referenceValues.begin();
 
   std::ofstream output(outputFilename);

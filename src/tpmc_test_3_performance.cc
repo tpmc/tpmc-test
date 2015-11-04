@@ -1,12 +1,14 @@
 #include <map>
 #include <iostream>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ini_parser.hpp>
 #include <Eigen/Dense>
 #include <tpmc/fieldtraits.hh>
 #include <tpmc/marchingcubes.hh>
 #include "grid.hh"
 #include "timer.hh"
 #include "geometry.hh"
-#include "io.hh"
+#include "utility.hh"
 
 namespace tpmc
 {
@@ -136,19 +138,22 @@ void printStatistics(std::ostream& output, const Map& m)
   }
 }
 
+namespace ptree = boost::property_tree;
+
 int main(int argc, char** argv)
 {
-  std::string inifile = tpmc_test::parseCMDLineParameters(argc,argv);
+  auto inifile = tpmc_test::parseCMDLineParameters(argc,argv);
 
   // read configuration
   std::cout << "reading configuration " << inifile << std::endl;
-  auto param = tpmc_test::parseIniFile(inifile);
-  const unsigned int numberOfLevels = param["numberOfLevels"].to_uint();
-  const unsigned int numberOfRandomRuns = param["numberOfRandomRuns"].to_uint();
-  const unsigned int numberOfRunsPerDataset = param["numberOfRunsPerDataset"].to_uint();
-  const std::string referenceFile = param["referenceFile"];
-  const double fuzzyTolerance = param["fuzzyTolerance"].to_double();
-  const std::string outputFilename = param["outputFilename"];
+  ptree::ptree param;
+  ptree::read_ini(inifile.string(), param);
+  const unsigned int numberOfLevels = param.get<unsigned int>("numberOfLevels");
+  const unsigned int numberOfRandomRuns = param.get<unsigned int>("numberOfRandomRuns");
+  const unsigned int numberOfRunsPerDataset = param.get<unsigned int>("numberOfRunsPerDataset");
+  const std::string referenceFile = param.get<std::string>("referenceFile");
+  const double fuzzyTolerance = param.get<double>("fuzzyTolerance");
+  const std::string outputFilename = param.get<std::string>("outputFilename");
 
   // define general grid properties
   const int dim = 3;
@@ -218,7 +223,7 @@ int main(int argc, char** argv)
   std::vector<std::string> referenceValues;
   bool checkReferenceSolution = (referenceFile != "");
   if (checkReferenceSolution)
-    referenceValues = tpmc_test::readFile( tpmc_test::pathInfo(inifile).first + referenceFile );
+    referenceValues = tpmc_test::readFile( (inifile.parent_path() / referenceFile).string() );
   auto reference = referenceValues.begin();
 
   // output statistics
