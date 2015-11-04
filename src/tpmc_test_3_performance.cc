@@ -6,6 +6,7 @@
 #include "grid.hh"
 #include "timer.hh"
 #include "geometry.hh"
+#include "io.hh"
 
 namespace tpmc
 {
@@ -131,22 +132,29 @@ void printStatistics(std::ostream& output, const Map& m)
       st += (v - mean) * (v - mean);
     }
     st = std::sqrt(st / (x.second.size() - 1));
-    output << x.first << " " << min << " " << max << " " << mean << " " << st << "\n";
+    output << x.first << " " << min << " " << max << " " << mean << " " << st << std::endl;
   }
 }
 
 int main(int argc, char** argv)
 {
-  if (argc < 2) {
-    std::cerr << "Error: no output file provided. call:\n" << argv[0] << " <outputfilename>\n";
-    return -1;
-  }
-  const std::string outputfilename = argv[1];
+  std::string inifile = tpmc_test::parseCMDLineParameters(argc,argv);
+
+  // read configuration
+  std::cout << "reading configuration " << inifile << std::endl;
+  auto param = tpmc_test::parseIniFile(inifile);
+  const unsigned int numberOfLevels = param["numberOfLevels"].to_uint();
+  const unsigned int numberOfRandomRuns = param["numberOfRandomRuns"].to_uint();
+  const unsigned int numberOfRunsPerDataset = param["numberOfRunsPerDataset"].to_uint();
+  const std::string referenceFile = param["referenceFile"];
+  const double fuzzyTolerance = param["fuzzyTolerance"].to_double();
+  const std::string outputFilename = param["outputFilename"];
+
   // define general grid properties
   const int dim = 3;
-  const std::vector<unsigned int> numbersOfElements{ { 16, 32, 64, 128, 256 } };
-  const unsigned int numberOfRandomRuns = 30;
-  const unsigned int numberOfRunsPerDataset = 30;
+  std::vector<unsigned int> numbersOfElements = {{16}};
+  for (unsigned int l = 1; l<numberOfLevels; l++)
+      numbersOfElements.push_back(numbersOfElements.back() * 2);
   typedef tpmc_test::Grid<dim>::domain_type domain_type;
   typedef typename tpmc::FieldTraits<domain_type>::field_type field_type;
   domain_type low = domain_type::Zero();
@@ -205,8 +213,16 @@ int main(int argc, char** argv)
               << " random datasets with " << numberOfElements
               << " elements: " << timer.total().count() << "s\n";
   }
+
+  // read reference file
+  std::vector<std::string> referenceValues;
+  bool checkReferenceSolution = (referenceFile != "");
+  if (checkReferenceSolution)
+    referenceValues = tpmc_test::readFile( tpmc_test::pathInfo(inifile).first + referenceFile );
+  auto reference = referenceValues.begin();
+
   // output statistics
-  std::ofstream output(outputfilename);
+  std::ofstream output(outputFilename);
   output << "time ratios key\n";
   printStatistics(output, timeRatiosKey);
   output << "\n";
@@ -219,13 +235,41 @@ int main(int argc, char** argv)
   output << "element count ratios\n";
   printStatistics(output, elementCountRatios);
   output << "\n";
+
   output << "N keyGen faceTests relFaceTests centerTests relCenterTests\n";
+  reference++; // skip first line
+  bool success = true;
   for (auto numberOfElements : numbersOfElements) {
+    double relFaceTests = double(faceTests[numberOfElements]) / keyGenerations[numberOfElements];
+    double relCenterTests = double(centerTests[numberOfElements]) / keyGenerations[numberOfElements];
+    // check result against reference file
+    if (checkReferenceSolution)
+    {
+      std::vector<tpmc_test::ini_value> refValues = tpmc_test::ini_value(*reference).to_vector();
+      double tolerance = fuzzyTolerance/std::sqrt(keyGenerations[numberOfElements]);
+      if (refValues[0].to_uint() != numberOfElements)
+        throw tpmc_test::TpmcTestException("data in reference file seems to be for a different test");
+      success &= (refValues[1].to_uint() == keyGenerations[numberOfElements]);
+      success &= std::abs(1.0 - refValues[2].to_double()/faceTests[numberOfElements]) < tolerance;
+      success &= std::abs(1.0 - refValues[3].to_double()/relFaceTests) < tolerance;
+      success &= std::abs(1.0 - refValues[4].to_double()/centerTests[numberOfElements]) < tolerance;
+      success &= std::abs(1.0 - refValues[5].to_double()/relCenterTests) < tolerance;
+      // std::cerr << "============ " << numberOfElements << "\t" << tolerance << std::endl;
+      // std::cerr << 1.0 - refValues[2].to_double()/faceTests[numberOfElements] << std::endl;
+      // std::cerr << 1.0 - refValues[3].to_double()/relFaceTests << std::endl;
+      // std::cerr << 1.0 - refValues[4].to_double()/centerTests[numberOfElements] << std::endl;
+      // std::cerr << 1.0 - refValues[5].to_double()/relCenterTests << std::endl;
+      reference++;
+    }
+
     output << numberOfElements << " " << keyGenerations[numberOfElements] << " "
-           << faceTests[numberOfElements] << " "
-           << static_cast<double>(faceTests[numberOfElements]) / keyGenerations[numberOfElements]
-           << " " << centerTests[numberOfElements] << " "
-           << static_cast<double>(centerTests[numberOfElements]) / keyGenerations[numberOfElements]
-           << "\n";
+           << faceTests[numberOfElements]   << " " << relFaceTests << " "
+           << centerTests[numberOfElements] << " " << relCenterTests << std::endl;
+  }
+
+  if (!success)
+  {
+    std::cerr << "Failed to reproduce reference solution" << std::endl;
+    return -1;
   }
 }
