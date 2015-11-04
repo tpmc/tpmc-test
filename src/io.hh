@@ -88,6 +88,26 @@ namespace tpmc_test {
     return std::pair<std::string,std::string>(dir,fname);
   }
 
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+
+  inline std::string parseCMDLineParameters(int argc, char** argv)
+  {
+    std::string application = tpmc_test::pathInfo(argv[0]).second;
+    if (argc < 2
+      or (std::string("basic") != argv[1] and std::string("full") != argv[1]))
+    {
+      std::cerr << "Error: no testtype provided.\nUsage:\t"
+                << application << " [basic|full]\n";
+      exit(-1);
+    }
+    return std::string(TOSTRING(TPMC_SRC_DIR)) +
+      argv[1] + "_tests/" + application + ".ini";
+  }
+
+#undef STRINGIFY
+#undef TOSTRING
+
 }
 
 #endif

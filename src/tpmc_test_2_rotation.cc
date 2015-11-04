@@ -10,8 +10,6 @@
 #include "levelsets.hh"
 #include "bisection.hh"
 #include "io.hh"
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
 
 namespace tpmc
 {
@@ -117,12 +115,8 @@ private:
 
 int main(int argc, char** argv)
 {
-  auto path_info = tpmc_test::pathInfo(argv[0]);
-  std::string inifile =
-    TOSTRING(TPMC_TEST_DIR) + path_info.second + ".ini";
-  if (argc >= 2) {
-    inifile = argv[1];
-  }
+  // parse command line parameters
+  std::string inifile = tpmc_test::parseCMDLineParameters(argc,argv);
 
   // read configuration
   std::cout << "reading configuration " << inifile << std::endl;
