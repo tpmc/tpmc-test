@@ -1,5 +1,7 @@
 #include <map>
 #include <iostream>
+#include <numeric>
+#include <random>
 #include <Eigen/Dense>
 #include <tpmc/fieldtraits.hh>
 #include <tpmc/marchingcubes.hh>
